@@ -15,6 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -217,7 +219,7 @@ private fun MusicGameScreen(
     }
 
     if (gameMode) {
-        Column(Modifier.fillMaxSize().background(Ink).padding(16.dp)) {
+        Column(Modifier.fillMaxSize().background(Ink).verticalScroll(rememberScrollState()).padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.weight(1f))
                 TextButton(onClick = { countdownScreen = false; gameMode = false; timerRunning = false; stopAudio() }) {
@@ -227,7 +229,7 @@ private fun MusicGameScreen(
             }
             Spacer(Modifier.height(16.dp))
             if (countdownScreen) {
-                Column(Modifier.fillMaxSize().background(Gold, RoundedCornerShape(24.dp)).padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Column(Modifier.fillMaxWidth().heightIn(min = 260.dp).background(Gold, RoundedCornerShape(24.dp)).padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text("NAME THAT TUNE", color = Color.Black, fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                     Spacer(Modifier.height(24.dp))
                     Text(if (timerRunning) secondsLeft.toString() else if (answerVisible) "REVEALED" else "TIME'S UP", color = Color.Black, fontSize = 76.sp, fontWeight = FontWeight.Black)
@@ -247,7 +249,7 @@ private fun MusicGameScreen(
                 Text("Tap a tile to start the challenge", color = Muted, fontSize = 13.sp)
                 Spacer(Modifier.height(16.dp))
                 if (tracks.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No songs yet. Switch to Dev Mode to add songs.", color = Cream) }
-                else LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                else LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp), contentPadding = PaddingValues(bottom = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     itemsIndexed(tracks) { index, track ->
                         Card(modifier = Modifier.fillMaxWidth().clickable { selectedIndex = index; countdownScreen = true; playClip() }, colors = CardDefaults.cardColors(containerColor = Raised), shape = RoundedCornerShape(20.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Gold.copy(alpha = 0.65f))) {
                             Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -265,7 +267,7 @@ private fun MusicGameScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Ink).padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 10.dp)
+        modifier = Modifier.fillMaxSize().background(Ink).verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 10.dp)
     ) {
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -410,7 +412,7 @@ private fun MusicGameScreen(
         Spacer(Modifier.height(8.dp))
 
         if (tracks.isEmpty()) {
-            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxWidth().heightIn(min = 120.dp).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.MusicNote, contentDescription = null, tint = Gold, modifier = Modifier.size(44.dp))
                     Spacer(Modifier.height(8.dp))
@@ -421,7 +423,7 @@ private fun MusicGameScreen(
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp),
                 contentPadding = PaddingValues(bottom = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
