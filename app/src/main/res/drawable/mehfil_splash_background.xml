@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Solid black base keeps the splash elegant while the gold brand artwork sits above it. -->
     <item android:drawable="@android:color/black" />
-    <item android:drawable="@drawable/mehfil_brand_art" android:gravity="center" />
+    <item
+        android:drawable="@drawable/mehfil_brand_art"
+        android:gravity="center"
+        android:width="320dp"
+        android:height="220dp" />
 </layer-list>
