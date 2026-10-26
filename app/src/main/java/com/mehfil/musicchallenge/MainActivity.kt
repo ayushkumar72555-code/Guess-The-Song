@@ -58,12 +58,17 @@ private val Raised = Color(0xFF24212A)
 
 data class Track(val uri: Uri, val name: String, val durationMs: Long = 0L)
 
-private fun readDurationMs(context: android.content.Context, uri: Uri): Long = runCatching {
-    MediaMetadataRetriever().use { retriever ->
+private fun readDurationMs(context: android.content.Context, uri: Uri): Long {
+    val retriever = MediaMetadataRetriever()
+    return try {
         retriever.setDataSource(context, uri)
         retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+    } catch (_: Exception) {
+        0L
+    } finally {
+        retriever.release()
     }
-}.getOrDefault(0L)
+}
 
 private fun formatDuration(durationMs: Long): String {
     val totalSeconds = (durationMs / 1000L).coerceAtLeast(0L)
