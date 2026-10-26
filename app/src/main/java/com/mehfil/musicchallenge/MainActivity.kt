@@ -37,11 +37,12 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.delay
 
-private val Ink = Color(0xFF111014)
-private val Panel = Color(0xFF211D22)
-private val Gold = Color(0xFFD8B56D)
-private val Cream = Color(0xFFF5EBDD)
-private val Muted = Color(0xFFB8ADA0)
+private val Ink = Color(0xFF0C0B0F)
+private val Panel = Color(0xFF19171D)
+private val Gold = Color(0xFFE6BE72)
+private val Cream = Color(0xFFF7F0E5)
+private val Muted = Color(0xFFA9A1B0)
+private val Raised = Color(0xFF24212A)
 
 data class Track(val uri: Uri, val name: String)
 
@@ -180,10 +181,26 @@ private fun MusicGameScreen(
     Column(
         modifier = Modifier.fillMaxSize().background(Ink).padding(16.dp)
     ) {
-        Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-        Text("Guess the Song", color = Cream, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
-        Text("Two players • One 5-second clip • No scoreboard", color = Muted, fontSize = 13.sp)
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Box(Modifier.size(44.dp).background(Gold, RoundedCornerShape(15.dp)), contentAlignment = Alignment.Center) {
+                Text("M", color = Ink, fontSize = 25.sp, fontWeight = FontWeight.Black)
+            }
+            Spacer(Modifier.width(11.dp))
+            Column(Modifier.weight(1f)) {
+                Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                Text("Music Challenge", color = Cream, fontSize = 21.sp, fontWeight = FontWeight.Bold)
+            }
+            Box(Modifier.background(Raised, RoundedCornerShape(20.dp)).padding(horizontal = 11.dp, vertical = 8.dp)) {
+                Text("HOST MODE", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            }
+        }
+        Spacer(Modifier.height(18.dp))
+        Text("LET THE MUSIC", color = Cream, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 30.sp)
+        Text("DO THE TALKING.  ♪", color = Gold, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 30.sp)
+        Spacer(Modifier.height(5.dp))
+        Text("Two players. Five seconds. Can they name that tune?", color = Muted, fontSize = 12.sp)
+        Spacer(Modifier.height(17.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Button(
@@ -207,11 +224,12 @@ private fun MusicGameScreen(
         Spacer(Modifier.height(12.dp))
         Card(
             colors = CardDefaults.cardColors(containerColor = Panel),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(25.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF39303B)),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(Modifier.padding(16.dp)) {
-                Text("NOW PLAYING", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+                Text("CURRENT CHALLENGE", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
                 Text(
                     tracks.getOrNull(selectedIndex)?.name ?: "Choose a song from your library",
                     color = Cream, fontSize = 20.sp, fontWeight = FontWeight.Bold,
@@ -302,7 +320,7 @@ private fun MusicGameScreen(
 
         Spacer(Modifier.height(18.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Music Library", color = Cream, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text("Your music library", color = Cream, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.weight(1f))
             Text("${tracks.size} songs", color = Muted, fontSize = 13.sp)
         }
@@ -337,13 +355,13 @@ private fun MusicGameScreen(
                         colors = CardDefaults.cardColors(
                             containerColor = if (index == selectedIndex) Color(0xFF3B3020) else Panel
                         ),
-                        shape = RoundedCornerShape(16.dp),
-                        border = if (index == selectedIndex) androidx.compose.foundation.BorderStroke(1.dp, Gold) else null
+                        shape = RoundedCornerShape(18.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, if (index == selectedIndex) Gold else Color(0xFF2A2630))
                     ) {
                         Column(Modifier.padding(12.dp)) {
                             Icon(Icons.Default.MusicNote, contentDescription = null, tint = Gold, modifier = Modifier.size(26.dp))
                             Spacer(Modifier.height(8.dp))
-                            Text(track.name, color = Cream, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Text(track.name, color = Cream, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 2, minLines = 2, overflow = TextOverflow.Ellipsis)
                             Spacer(Modifier.height(4.dp))
                             Text(if (index == selectedIndex) "Selected" else "Tap to select", color = Muted, fontSize = 11.sp)
                         }
