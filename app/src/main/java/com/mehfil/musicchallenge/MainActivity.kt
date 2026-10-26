@@ -350,24 +350,16 @@ private fun MusicGameScreen(
     ) {
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Box(Modifier.size(44.dp).background(Gold, RoundedCornerShape(15.dp)), contentAlignment = Alignment.Center) {
-                Text("M", color = Ink, fontSize = 25.sp, fontWeight = FontWeight.Black)
-            }
-            Spacer(Modifier.width(11.dp))
             Column(Modifier.weight(1f)) {
-                Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                Text("Music Challenge", color = Cream, fontSize = 21.sp, fontWeight = FontWeight.Bold)
+                Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.8.sp)
+                Spacer(Modifier.height(3.dp))
+                Text("Guess The Song", color = Cream, fontSize = 25.sp, fontWeight = FontWeight.Bold)
             }
             TextButton(onClick = { gameMode = true; countdownScreen = false; timerRunning = false; stopAudio() }) {
                 Text("DEV MODE", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
-        Spacer(Modifier.height(18.dp))
-        Text("LET THE MUSIC", color = Cream, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 30.sp)
-        Text("DO THE TALKING.  ♪", color = Gold, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 30.sp)
-        Spacer(Modifier.height(5.dp))
-        Text("Two players. One song. Can they name that tune?", color = Muted, fontSize = 12.sp)
-        Spacer(Modifier.height(17.dp))
+        Spacer(Modifier.height(20.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Button(
