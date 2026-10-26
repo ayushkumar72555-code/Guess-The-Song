@@ -192,7 +192,7 @@ private fun MusicGameScreen(
                 Text("Music Challenge", color = Cream, fontSize = 21.sp, fontWeight = FontWeight.Bold)
             }
             Box(Modifier.background(Raised, RoundedCornerShape(20.dp)).padding(horizontal = 11.dp, vertical = 8.dp)) {
-                Text("HOST MODE", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text("DEV MODE", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
         }
         Spacer(Modifier.height(18.dp))
