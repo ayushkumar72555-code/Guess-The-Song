@@ -1,6 +1,8 @@
 package com.mehfil.musicchallenge
 
+import android.app.Activity
 import android.content.Intent
+import android.media.MediaMetadataRetriever
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
@@ -54,7 +56,19 @@ private val Cream = Color(0xFFF7F0E5)
 private val Muted = Color(0xFFA9A1B0)
 private val Raised = Color(0xFF24212A)
 
-data class Track(val uri: Uri, val name: String)
+data class Track(val uri: Uri, val name: String, val durationMs: Long = 0L)
+
+private fun readDurationMs(context: android.content.Context, uri: Uri): Long = runCatching {
+    MediaMetadataRetriever().use { retriever ->
+        retriever.setDataSource(context, uri)
+        retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+    }
+}.getOrDefault(0L)
+
+private fun formatDuration(durationMs: Long): String {
+    val totalSeconds = (durationMs / 1000L).coerceAtLeast(0L)
+    return "%d:%02d".format(totalSeconds / 60L, totalSeconds % 60L)
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,7 +123,7 @@ private fun MusicGameScreen(
                         val uri = Uri.parse(item.getString("uri"))
                         // Restore only files for which Android still grants access.
                         context.contentResolver.openFileDescriptor(uri, "r")?.use {
-                            add(Track(uri, item.optString("name", "Unknown song")))
+                            add(Track(uri, item.optString("name", "Unknown song"), item.optLong("durationMs", readDurationMs(context, uri))))
                         }
                     }
                 }
@@ -128,11 +142,25 @@ private fun MusicGameScreen(
     var status by remember { mutableStateOf("Add songs to begin") }
     val player = remember { playerFactory() }
 
+    LaunchedEffect(gameMode, countdownScreen) {
+        val activity = context as? Activity ?: return@LaunchedEffect
+        val controller = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
+        if (gameMode && countdownScreen) {
+            WindowCompat.setDecorFitsSystemWindows(activity.window, false)
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(activity.window, true)
+            controller.hide(WindowInsetsCompat.Type.statusBars())
+            controller.show(WindowInsetsCompat.Type.navigationBars())
+        }
+    }
+
     // Persist the selected audio URIs and display names so the library survives app restarts.
     LaunchedEffect(tracks.size, tracks.map { it.uri.toString() }) {
         val array = JSONArray()
         tracks.forEach { track ->
-            array.put(JSONObject().put("uri", track.uri.toString()).put("name", track.name))
+            array.put(JSONObject().put("uri", track.uri.toString()).put("name", track.name).put("durationMs", track.durationMs))
         }
         context.getSharedPreferences("mehfil_music_library", android.content.Context.MODE_PRIVATE)
             .edit()
@@ -152,7 +180,7 @@ private fun MusicGameScreen(
                         uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
                     )
                 }
-                if (tracks.none { it.uri == uri }) tracks.add(Track(uri, getName(uri)))
+                if (tracks.none { it.uri == uri }) tracks.add(Track(uri, getName(uri), readDurationMs(context, uri)))
             }
         }
         if (tracks.isNotEmpty() && selectedIndex == -1) {
@@ -219,6 +247,39 @@ private fun MusicGameScreen(
     }
 
     if (gameMode) {
+        if (countdownScreen) {
+            Box(Modifier.fillMaxSize().background(Ink).padding(24.dp), contentAlignment = Alignment.Center) {
+                if (timerRunning) {
+                    Text(secondsLeft.toString(), color = Gold, fontSize = 112.sp, lineHeight = 116.sp, fontWeight = FontWeight.Black)
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        if (answerVisible) {
+                            Text(
+                                tracks.getOrNull(selectedIndex)?.name ?: "",
+                                color = Gold, fontSize = 30.sp, lineHeight = 36.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        } else {
+                            Text("TIME'S UP", color = Gold, fontSize = 38.sp, fontWeight = FontWeight.Black)
+                            Spacer(Modifier.height(28.dp))
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(onClick = { playClip() }, colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Ink)) {
+                                Text("Replay", fontWeight = FontWeight.Bold)
+                            }
+                            if (!answerVisible) {
+                                Button(onClick = { answerVisible = true; stopAudio() }, colors = ButtonDefaults.buttonColors(containerColor = Panel, contentColor = Gold)) {
+                                    Text("Reveal", fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return
+        }
+
         Column(Modifier.fillMaxSize().background(Ink).verticalScroll(rememberScrollState()).padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.weight(1f))
@@ -228,35 +289,34 @@ private fun MusicGameScreen(
                 }
             }
             Spacer(Modifier.height(16.dp))
-            if (countdownScreen) {
-                Column(Modifier.fillMaxWidth().heightIn(min = 260.dp).background(Gold, RoundedCornerShape(24.dp)).padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Text("NAME THAT TUNE", color = Color.Black, fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                    Spacer(Modifier.height(24.dp))
-                    Text(if (timerRunning) secondsLeft.toString() else if (answerVisible) "REVEALED" else "TIME'S UP", color = Color.Black, fontSize = 76.sp, fontWeight = FontWeight.Black)
-                    Spacer(Modifier.height(12.dp))
-                    if (answerVisible) Text(tracks.getOrNull(selectedIndex)?.name ?: "", color = Color.Black, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    else Text(if (timerRunning) "Listen carefully!" else "Time is up!", color = Color.Black, fontSize = 16.sp)
-                    Spacer(Modifier.height(28.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(onClick = { playClip() }, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Replay") }
-                        Button(onClick = { timerRunning = false; answerVisible = true; stopAudio(); status = "Answer revealed" }, enabled = !timerRunning, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Reveal") }
-                    }
-                    Spacer(Modifier.height(14.dp))
-                    TextButton(onClick = { countdownScreen = false; timerRunning = false; stopAudio() }) { Text("Back to songs", color = Color.Black) }
+            Text("CHOOSE A SONG", color = Cream, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
+            Text("Tap a tile to start the challenge", color = Muted, fontSize = 13.sp)
+            Spacer(Modifier.height(16.dp))
+            if (tracks.isEmpty()) {
+                Box(Modifier.fillMaxWidth().heightIn(min = 120.dp), contentAlignment = Alignment.Center) {
+                    Text("No songs yet. Switch to Dev Mode to add songs.", color = Cream)
                 }
             } else {
-                Text("CHOOSE A SONG", color = Cream, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
-                Text("Tap a tile to start the challenge", color = Muted, fontSize = 13.sp)
-                Spacer(Modifier.height(16.dp))
-                if (tracks.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No songs yet. Switch to Dev Mode to add songs.", color = Cream) }
-                else LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp), contentPadding = PaddingValues(bottom = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 520.dp),
+                    contentPadding = PaddingValues(bottom = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     itemsIndexed(tracks) { index, track ->
-                        Card(modifier = Modifier.fillMaxWidth().clickable { selectedIndex = index; countdownScreen = true; playClip() }, colors = CardDefaults.cardColors(containerColor = Raised), shape = RoundedCornerShape(20.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Gold.copy(alpha = 0.65f))) {
-                            Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { selectedIndex = index; countdownScreen = true; playClip() },
+                            colors = CardDefaults.cardColors(containerColor = Raised),
+                            shape = RoundedCornerShape(20.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Gold.copy(alpha = 0.65f))
+                        ) {
+                            Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.MusicNote, contentDescription = null, tint = Gold, modifier = Modifier.size(34.dp))
                                 Spacer(Modifier.height(10.dp))
                                 Text("SONG ${index + 1}", color = Gold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                Text("Tap to play", color = Cream, fontSize = 13.sp)
+                                Spacer(Modifier.height(6.dp))
+                                Text(formatDuration(track.durationMs), color = Cream, fontSize = 28.sp, lineHeight = 32.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
