@@ -190,7 +190,7 @@ private fun MusicGameScreen(
                 Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.weight(1f))
                 TextButton(onClick = { countdownScreen = false; gameMode = false; timerRunning = false; stopAudio() }) {
                     Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Gold)
-                    Text("DEV MODE", color = Gold)
+                    Text("GAME MODE", color = Gold)
                 }
             }
             Spacer(Modifier.height(16.dp))
@@ -246,7 +246,7 @@ private fun MusicGameScreen(
                 Text("Music Challenge", color = Cream, fontSize = 21.sp, fontWeight = FontWeight.Bold)
             }
             TextButton(onClick = { gameMode = true; countdownScreen = false; timerRunning = false; stopAudio() }) {
-                Text("GAME MODE", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text("DEV MODE", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(Modifier.height(18.dp))
