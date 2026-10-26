@@ -369,5 +369,6 @@ private fun MusicGameScreen(
                 }
             }
         }
+        }
     }
 }
