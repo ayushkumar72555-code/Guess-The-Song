@@ -42,6 +42,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.delay
+import org.json.JSONArray
+import org.json.JSONObject
 
 private val Ink = Color(0xFF0C0B0F)
 private val Panel = Color(0xFF19171D)
@@ -93,7 +95,25 @@ private fun MusicGameScreen(
     playerFactory: () -> ExoPlayer
 ) {
     val context = LocalContext.current
-    val tracks = remember { mutableStateListOf<Track>() }
+    val tracks = remember {
+        mutableStateListOf<Track>().apply {
+            val saved = context.getSharedPreferences("mehfil_music_library", android.content.Context.MODE_PRIVATE)
+                .getString("tracks_json", null)
+            if (!saved.isNullOrBlank()) {
+                runCatching {
+                    val array = JSONArray(saved)
+                    for (i in 0 until array.length()) {
+                        val item = array.getJSONObject(i)
+                        val uri = Uri.parse(item.getString("uri"))
+                        // Restore only files for which Android still grants access.
+                        context.contentResolver.openFileDescriptor(uri, "r")?.use {
+                            add(Track(uri, item.optString("name", "Unknown song")))
+                        }
+                    }
+                }
+            }
+        }
+    }
     var selectedIndex by remember { mutableIntStateOf(-1) }
     var timerLength by remember { mutableIntStateOf(12) }
     var timerInput by remember { mutableStateOf("12") }
@@ -105,6 +125,18 @@ private fun MusicGameScreen(
     var answerVisible by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("Add songs to begin") }
     val player = remember { playerFactory() }
+
+    // Persist the selected audio URIs and display names so the library survives app restarts.
+    LaunchedEffect(tracks.size, tracks.map { it.uri.toString() }) {
+        val array = JSONArray()
+        tracks.forEach { track ->
+            array.put(JSONObject().put("uri", track.uri.toString()).put("name", track.name))
+        }
+        context.getSharedPreferences("mehfil_music_library", android.content.Context.MODE_PRIVATE)
+            .edit()
+            .putString("tracks_json", array.toString())
+            .apply()
+    }
 
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
