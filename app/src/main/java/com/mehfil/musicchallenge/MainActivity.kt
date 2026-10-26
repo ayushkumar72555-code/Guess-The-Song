@@ -255,7 +255,8 @@ private fun MusicGameScreen(
         if (countdownScreen) {
             val landscape = androidx.compose.ui.platform.LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
             BoxWithConstraints(Modifier.fillMaxSize().background(Gold)) {
-                val timerFont = if (landscape) (maxHeight.value * 0.72f).coerceIn(100f, 220f).sp else (maxHeight.value * 0.48f).coerceIn(120f, 260f).sp
+                val timerFont = if (landscape) (maxHeight.value * 0.88f).coerceIn(110f, 300f).sp else (maxHeight.value * 0.78f).coerceIn(150f, 380f).sp
+                val answerFont = if (landscape) (maxHeight.value * 0.30f).coerceIn(42f, 76f).sp else (maxHeight.value * 0.16f).coerceIn(42f, 82f).sp
                 // Keep a visible way back to the song cards, even in immersive full-screen mode.
                 IconButton(
                     onClick = {
@@ -271,16 +272,26 @@ private fun MusicGameScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back to music cards", tint = Gold, modifier = Modifier.size(30.dp))
                 }
                 if (timerRunning) {
-                    Box(Modifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.Center) {
-                        Text(secondsLeft.toString(), color = Color.Black, fontSize = timerFont, lineHeight = timerFont, fontWeight = FontWeight.Black, maxLines = 1)
+                    Box(Modifier.fillMaxSize().padding(horizontal = 2.dp, vertical = 0.dp), contentAlignment = Alignment.Center) {
+                        Text(
+                            secondsLeft.toString(),
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Black,
+                            fontSize = timerFont,
+                            lineHeight = timerFont,
+                            fontWeight = FontWeight.Black,
+                            maxLines = 1,
+                            softWrap = false,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
                 } else if (landscape) {
                     Row(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                             if (answerVisible) {
-                                Text(tracks.getOrNull(selectedIndex)?.name ?: "", color = Color.Black, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.ExtraBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                                Text(tracks.getOrNull(selectedIndex)?.name ?: "", modifier = Modifier.fillMaxWidth(), color = Color.Black, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontSize = answerFont, lineHeight = answerFont * 1.12f, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                             } else {
-                                Text("TIME'S UP", color = Color.Black, fontSize = 44.sp, fontWeight = FontWeight.Black)
+                                Text("TIME'S UP", color = Color.Black, fontSize = if (landscape) 60.sp else 72.sp, lineHeight = if (landscape) 64.sp else 76.sp, fontWeight = FontWeight.Black, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                             }
                         }
                         Column(Modifier.padding(start = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -293,9 +304,9 @@ private fun MusicGameScreen(
                 } else {
                     Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         if (answerVisible) {
-                            Text(tracks.getOrNull(selectedIndex)?.name ?: "", color = Color.Black, fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.ExtraBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Text(tracks.getOrNull(selectedIndex)?.name ?: "", modifier = Modifier.fillMaxWidth(), color = Color.Black, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontSize = answerFont, lineHeight = answerFont * 1.12f, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         } else {
-                            Text("TIME'S UP", color = Color.Black, fontSize = 40.sp, fontWeight = FontWeight.Black)
+                            Text("TIME'S UP", color = Color.Black, fontSize = 58.sp, lineHeight = 64.sp, fontWeight = FontWeight.Black, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                         Spacer(Modifier.height(48.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
