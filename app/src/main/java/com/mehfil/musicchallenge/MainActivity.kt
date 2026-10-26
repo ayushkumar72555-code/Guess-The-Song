@@ -121,7 +121,7 @@ private fun MusicGameScreen(
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_ENDED) {
                     isPlaying = false
-                    status = "Clip finished — make your guess!"
+                    status = "Song finished — make your guess!"
                 }
             }
         }
@@ -160,12 +160,6 @@ private fun MusicGameScreen(
         player.prepare()
         player.seekTo(0)
         player.playWhenReady = true
-        // Enforce a 5-second clip regardless of the full track length.
-        player.createMessage { _, _ ->
-            player.pause()
-            isPlaying = false
-            status = "Clip finished — make your guess!"
-        }.setPosition(5000).setDeleteAfterDelivery(true).send()
     }
 
     fun nextTrack() {
@@ -199,7 +193,7 @@ private fun MusicGameScreen(
         Text("LET THE MUSIC", color = Cream, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 30.sp)
         Text("DO THE TALKING.  ♪", color = Gold, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 30.sp)
         Spacer(Modifier.height(5.dp))
-        Text("Two players. Five seconds. Can they name that tune?", color = Muted, fontSize = 12.sp)
+        Text("Two players. One song. Can they name that tune?", color = Muted, fontSize = 12.sp)
         Spacer(Modifier.height(17.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -268,7 +262,7 @@ private fun MusicGameScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Ink)
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        Spacer(Modifier.width(4.dp)); Text("Play 5 sec")
+                        Spacer(Modifier.width(4.dp)); Text("Play Full Song")
                     }
                     OutlinedButton(
                         onClick = { stopAudio(); status = "Audio stopped" },
