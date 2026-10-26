@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -145,7 +146,47 @@ private fun MusicGameScreen(
     var isPlaying by remember { mutableStateOf(false) }
     var answerVisible by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("Add songs to begin") }
+    var showExitDialog by remember { mutableStateOf(false) }
     val player = remember { playerFactory() }
+
+    // Handle Android edge-swipe/back navigation inside the app instead of immediately exiting.
+    BackHandler {
+        when {
+            countdownScreen -> {
+                countdownScreen = false
+                timerRunning = false
+                secondsLeft = 0
+                answerVisible = false
+                stopAudio()
+            }
+            gameMode -> {
+                gameMode = false
+                timerRunning = false
+                countdownScreen = false
+                secondsLeft = 0
+                answerVisible = false
+                stopAudio()
+            }
+            else -> showExitDialog = true
+        }
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("Exit Guess The Song?") },
+            text = { Text("Are you sure you want to close the app?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExitDialog = false
+                    (context as? Activity)?.finish()
+                }) { Text("Exit") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) { Text("Stay") }
+            }
+        )
+    }
 
     LaunchedEffect(gameMode, countdownScreen) {
         val activity = context as? Activity ?: return@LaunchedEffect
