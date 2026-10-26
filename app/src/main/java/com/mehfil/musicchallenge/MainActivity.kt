@@ -21,11 +21,14 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -93,6 +96,9 @@ private fun MusicGameScreen(
     val tracks = remember { mutableStateListOf<Track>() }
     var selectedIndex by remember { mutableIntStateOf(-1) }
     var timerLength by remember { mutableIntStateOf(12) }
+    var timerInput by remember { mutableStateOf("12") }
+    var gameMode by remember { mutableStateOf(false) }
+    var countdownScreen by remember { mutableStateOf(false) }
     var secondsLeft by remember { mutableIntStateOf(0) }
     var timerRunning by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -178,6 +184,54 @@ private fun MusicGameScreen(
         status = "Ready — two participants, one song"
     }
 
+    if (gameMode) {
+        Column(Modifier.fillMaxSize().background(Ink).padding(16.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.weight(1f))
+                TextButton(onClick = { countdownScreen = false; gameMode = false; timerRunning = false; stopAudio() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Gold)
+                    Text("DEV MODE", color = Gold)
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            if (countdownScreen) {
+                Column(Modifier.fillMaxSize().background(Gold, RoundedCornerShape(24.dp)).padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Text("NAME THAT TUNE", color = Color.Black, fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    Spacer(Modifier.height(24.dp))
+                    Text(if (timerRunning) secondsLeft.toString() else if (answerVisible) "REVEALED" else "TIME'S UP", color = Color.Black, fontSize = 76.sp, fontWeight = FontWeight.Black)
+                    Spacer(Modifier.height(12.dp))
+                    if (answerVisible) Text(tracks.getOrNull(selectedIndex)?.name ?: "", color = Color.Black, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    else Text(if (timerRunning) "Listen carefully!" else "Time is up!", color = Color.Black, fontSize = 16.sp)
+                    Spacer(Modifier.height(28.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Button(onClick = { playClip() }, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Replay") }
+                        Button(onClick = { timerRunning = false; answerVisible = true; stopAudio(); status = "Answer revealed" }, enabled = !timerRunning, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Reveal") }
+                    }
+                    Spacer(Modifier.height(14.dp))
+                    TextButton(onClick = { countdownScreen = false; timerRunning = false; stopAudio() }) { Text("Back to songs", color = Color.Black) }
+                }
+            } else {
+                Text("CHOOSE A SONG", color = Cream, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
+                Text("Tap a tile to start the challenge", color = Muted, fontSize = 13.sp)
+                Spacer(Modifier.height(16.dp))
+                if (tracks.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No songs yet. Switch to Dev Mode to add songs.", color = Cream) }
+                else LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    itemsIndexed(tracks) { index, track ->
+                        Card(modifier = Modifier.fillMaxWidth().clickable { selectedIndex = index; countdownScreen = true; playClip() }, colors = CardDefaults.cardColors(containerColor = Raised), shape = RoundedCornerShape(20.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Gold.copy(alpha = 0.65f))) {
+                            Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.MusicNote, contentDescription = null, tint = Gold, modifier = Modifier.size(34.dp))
+                                Spacer(Modifier.height(10.dp))
+                                Text("SONG ${index + 1}", color = Gold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Tap to play", color = Cream, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().background(Ink).padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 10.dp)
     ) {
@@ -191,8 +245,8 @@ private fun MusicGameScreen(
                 Text("MEHFIL-E-RUBAROO", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                 Text("Music Challenge", color = Cream, fontSize = 21.sp, fontWeight = FontWeight.Bold)
             }
-            Box(Modifier.background(Raised, RoundedCornerShape(20.dp)).padding(horizontal = 11.dp, vertical = 8.dp)) {
-                Text("DEV MODE", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            TextButton(onClick = { gameMode = true; countdownScreen = false; timerRunning = false; stopAudio() }) {
+                Text("GAME MODE", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(Modifier.height(18.dp))
@@ -240,23 +294,20 @@ private fun MusicGameScreen(
                 Spacer(Modifier.height(14.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(10, 12, 15).forEach { value ->
-                        FilterChip(
-                            selected = timerLength == value,
-                            onClick = { timerLength = value },
-                            label = { Text("${value}s") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Gold,
-                                selectedLabelColor = Ink,
-                                labelColor = Cream
-                            )
-                        )
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        if (timerRunning) "${secondsLeft}s" else "Timer",
-                        color = Gold, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold
+                    OutlinedTextField(
+                        value = timerInput,
+                        onValueChange = { input ->
+                            timerInput = input.filter { it.isDigit() }.take(4)
+                            timerInput.toIntOrNull()?.takeIf { it in 1..9999 }?.let { timerLength = it }
+                        },
+                        label = { Text("Timer (sec)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        modifier = Modifier.width(150.dp),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Gold, unfocusedBorderColor = Muted, focusedLabelColor = Gold, unfocusedLabelColor = Muted, focusedTextColor = Cream, unfocusedTextColor = Cream)
                     )
+                    Spacer(Modifier.weight(1f))
+                    Text(if (timerRunning) "${secondsLeft}s" else "Timer", color = Gold, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                 }
 
                 Spacer(Modifier.height(12.dp))
