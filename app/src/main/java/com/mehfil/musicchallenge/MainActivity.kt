@@ -256,6 +256,20 @@ private fun MusicGameScreen(
             val landscape = androidx.compose.ui.platform.LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
             BoxWithConstraints(Modifier.fillMaxSize().background(Gold)) {
                 val timerFont = if (landscape) (maxHeight.value * 0.72f).coerceIn(100f, 220f).sp else (maxHeight.value * 0.48f).coerceIn(120f, 260f).sp
+                // Keep a visible way back to the song cards, even in immersive full-screen mode.
+                IconButton(
+                    onClick = {
+                        countdownScreen = false
+                        timerRunning = false
+                        secondsLeft = 0
+                        answerVisible = false
+                        stopAudio()
+                    },
+                    modifier = Modifier.align(Alignment.TopStart).padding(12.dp).size(52.dp)
+                        .background(Ink.copy(alpha = 0.88f), RoundedCornerShape(16.dp))
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back to music cards", tint = Gold, modifier = Modifier.size(30.dp))
+                }
                 if (timerRunning) {
                     Box(Modifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.Center) {
                         Text(secondsLeft.toString(), color = Color.Black, fontSize = timerFont, lineHeight = timerFont, fontWeight = FontWeight.Black, maxLines = 1)
