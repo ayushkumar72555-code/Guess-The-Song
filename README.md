@@ -1,4 +1,4 @@
-# Mehfil Music Challenge
+# Guess-The-Song
 
 An Android Studio project for the MEHFIL-E-RUBAROO "Guess the Song" game.
 
