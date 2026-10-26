@@ -253,30 +253,41 @@ private fun MusicGameScreen(
 
     if (gameMode) {
         if (countdownScreen) {
-            Box(Modifier.fillMaxSize().background(Ink).padding(24.dp), contentAlignment = Alignment.Center) {
+            val landscape = androidx.compose.ui.platform.LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+            BoxWithConstraints(Modifier.fillMaxSize().background(Gold)) {
+                val timerFont = if (landscape) (maxHeight.value * 0.72f).coerceIn(100f, 220f).sp else (maxHeight.value * 0.48f).coerceIn(120f, 260f).sp
                 if (timerRunning) {
-                    Text(secondsLeft.toString(), color = Gold, fontSize = 112.sp, lineHeight = 116.sp, fontWeight = FontWeight.Black)
-                } else {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        if (answerVisible) {
-                            Text(
-                                tracks.getOrNull(selectedIndex)?.name ?: "",
-                                color = Gold, fontSize = 30.sp, lineHeight = 36.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        } else {
-                            Text("TIME'S UP", color = Gold, fontSize = 38.sp, fontWeight = FontWeight.Black)
-                            Spacer(Modifier.height(28.dp))
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Button(onClick = { playClip() }, colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Ink)) {
-                                Text("Replay", fontWeight = FontWeight.Bold)
+                    Box(Modifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.Center) {
+                        Text(secondsLeft.toString(), color = Color.Black, fontSize = timerFont, lineHeight = timerFont, fontWeight = FontWeight.Black, maxLines = 1)
+                    }
+                } else if (landscape) {
+                    Row(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                            if (answerVisible) {
+                                Text(tracks.getOrNull(selectedIndex)?.name ?: "", color = Color.Black, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.ExtraBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            } else {
+                                Text("TIME'S UP", color = Color.Black, fontSize = 44.sp, fontWeight = FontWeight.Black)
                             }
+                        }
+                        Column(Modifier.padding(start = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Button(onClick = { playClip() }, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Replay", fontWeight = FontWeight.Bold, fontSize = 18.sp) }
                             if (!answerVisible) {
-                                Button(onClick = { answerVisible = true; stopAudio() }, colors = ButtonDefaults.buttonColors(containerColor = Panel, contentColor = Gold)) {
-                                    Text("Reveal", fontWeight = FontWeight.Bold)
-                                }
+                                Button(onClick = { answerVisible = true; stopAudio() }, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Reveal", fontWeight = FontWeight.Bold, fontSize = 18.sp) }
+                            }
+                        }
+                    }
+                } else {
+                    Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        if (answerVisible) {
+                            Text(tracks.getOrNull(selectedIndex)?.name ?: "", color = Color.Black, fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.ExtraBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        } else {
+                            Text("TIME'S UP", color = Color.Black, fontSize = 40.sp, fontWeight = FontWeight.Black)
+                        }
+                        Spacer(Modifier.height(48.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                            Button(onClick = { playClip() }, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Replay", fontWeight = FontWeight.Bold, fontSize = 18.sp) }
+                            if (!answerVisible) {
+                                Button(onClick = { answerVisible = true; stopAudio() }, colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Gold)) { Text("Reveal", fontWeight = FontWeight.Bold, fontSize = 18.sp) }
                             }
                         }
                     }
@@ -302,20 +313,9 @@ private fun MusicGameScreen(
                     Text("No songs yet. Switch to Dev Mode to add songs.", color = Cream)
                 }
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 520.dp),
-                    contentPadding = PaddingValues(bottom = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxWidth().heightIn(max = 520.dp), contentPadding = PaddingValues(bottom = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     itemsIndexed(tracks) { index, track ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth().clickable { selectedIndex = index; countdownScreen = true; playClip() },
-                            colors = CardDefaults.cardColors(containerColor = Raised),
-                            shape = RoundedCornerShape(20.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Gold.copy(alpha = 0.65f))
-                        ) {
+                        Card(modifier = Modifier.fillMaxWidth().clickable { selectedIndex = index; countdownScreen = true; playClip() }, colors = CardDefaults.cardColors(containerColor = Raised), shape = RoundedCornerShape(20.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Gold.copy(alpha = 0.65f))) {
                             Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.MusicNote, contentDescription = null, tint = Gold, modifier = Modifier.size(34.dp))
                                 Spacer(Modifier.height(10.dp))
