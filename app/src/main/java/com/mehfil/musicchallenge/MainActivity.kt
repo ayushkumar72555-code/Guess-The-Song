@@ -6,6 +6,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import androidx.activity.ComponentActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,6 +52,9 @@ data class Track(val uri: Uri, val name: String)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Hide the status bar so the clock, notifications, signal and battery icons do not overlay the app.
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        WindowInsetsControllerCompat(window, window.decorView).hide(WindowInsetsCompat.Type.statusBars())
         setContent {
             MaterialTheme(
                 colorScheme = darkColorScheme(
@@ -173,7 +179,7 @@ private fun MusicGameScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Ink).padding(16.dp)
+        modifier = Modifier.fillMaxSize().background(Ink).padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 10.dp)
     ) {
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
